@@ -1,0 +1,5 @@
+services:
+  dbo_roles_tags.commands:
+    class: Drupal\dbo_roles_tags\Commands\DboRolesTagsCommands
+    tags:
+      - { name: drush.command }

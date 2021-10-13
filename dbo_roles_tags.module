@@ -1,0 +1,80 @@
+<?php
+
+/**
+ * @file
+ * Contains dbo_roles_tags.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_help().
+ */
+function dbo_roles_tags_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the dbo_roles_tags module.
+    case 'help.page.dbo_roles_tags':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Functionality to add tags to user roles.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function dbo_roles_tags_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+ $state = \Drupal::state()->get('dbo_roles_tags') ?? [];
+ switch($form_id) {
+   case 'user_role_delete_form':
+     $form['actions']['submit']['#submit'][]  = 'dbo_roles_tags_form_delete';
+     break;
+   case 'user_role_form':
+     $default_value = '';
+     if (!empty($form['id']['#default_value']) && !empty($state[$form['id']['#default_value']])) {
+       $default_value = $state[$form['id']['#default_value']];
+     }
+
+     $form['tags'] = [
+       '#title' => t('Tag'),
+       '#description' => t(''),
+       '#type' => 'textfield',
+       '#default_value' => $default_value,
+       '#size' => 30,
+       '#maxlength' => 1000,
+       '#required' => FALSE,
+       '#weight' => 10,
+     ];
+
+     $form['actions']['submit']['#submit'][]  = 'dbo_roles_tags_form_submit';
+
+     break;
+ }
+}
+
+/**
+ * Submit handler for dbo_roles_tags.
+ */
+function dbo_roles_tags_form_submit($form, FormStateInterface $form_state) {
+ $values = $form_state->getValues();
+ $state = \Drupal::state()->get('dbo_roles_tags') ?? [];
+ $state[$values['id']] = $values['tags'];
+ \Drupal::state()->set('dbo_roles_tags', $state);
+}
+
+/**
+ * Delete handler for dbo_roles_tags.
+ */
+function dbo_roles_tags_form_delete($form, FormStateInterface $form_state) {
+ $state = \Drupal::state()->get('dbo_roles_tags') ?? [];
+ $params = preg_split('/\//', \Drupal::service('path.current')->getPath());
+ $role = $params[5];
+ if (!empty($role) && !empty($state[$role])) {
+   unset($state[$role]);
+   \Drupal::state()->set('dbo_roles_tags', $state);
+ }
+}

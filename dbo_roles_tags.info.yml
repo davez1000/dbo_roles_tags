@@ -1,0 +1,5 @@
+name: 'Roles tags'
+type: module
+description: 'Functionality to add tags to user roles.'
+core_version_requirement: ^8 || ^9
+package: 'Custom'
